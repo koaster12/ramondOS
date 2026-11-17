@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 120" role="img" aria-label="ramondOS">
+  <rect width="640" height="120" fill="#080810"/>
+  <path d="M0 0h96v26H48a22 22 0 0 0-22 22v0H0z" fill="#ff9900"/>
+  <rect x="106" y="0" width="150" height="26" rx="13" fill="#cc99cc"/>
+  <rect x="266" y="0" width="110" height="26" rx="13" fill="#9999ff"/>
+  <rect x="386" y="0" width="254" height="26" rx="13" fill="#ffcc99"/>
+  <rect x="0" y="36" width="26" height="84" rx="8" fill="#ff9900"/>
+  <text x="46" y="92" font-family="DejaVu Sans Mono, Consolas, monospace" font-weight="700" font-size="64" fill="#ff9900">ramondOS</text>
+  <text x="372" y="92" font-family="DejaVu Sans Mono, Consolas, monospace" font-weight="700" font-size="17" fill="#9999ff">NATIVE SECURITY OS</text>
+  <rect x="372" y="100" width="150" height="14" rx="7" fill="#ff5555"/>
+</svg>
