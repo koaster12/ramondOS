@@ -13,6 +13,11 @@ A from-scratch native x86 operating system for reverse engineering, vulnerabilit
 
 Run it in a virtual machine (QEMU or VirtualBox). It is a research system and has not been hardened for bare metal.
 
+## Download
+
+- [ramondOS v1.3 ISO](https://github.com/koaster12/ramondOS/releases/download/v1.3/ramondOS-v1.3-share.iso) (6.1 MB, 32-bit, BIOS boot) and its [release page](https://github.com/koaster12/ramondOS/releases/tag/v1.3)
+- Run it in [VirtualBox](https://www.virtualbox.org/wiki/Downloads): New VM, Type Other, Version Other/Unknown (32-bit), 512 MB RAM, attach the ISO as the optical drive, EFI off.
+
 ## Documentation
 
 - Website: see `index.html` (served by GitHub Pages)

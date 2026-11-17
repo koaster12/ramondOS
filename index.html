@@ -60,7 +60,7 @@ footer{border-top:1px solid #22223a;color:var(--dim);text-align:center;padding:3
   </div>
 </header>
 <nav class="top"><div>
-<a href="#why-ramondos-was-built-and-how-the-build-went">WHY</a><a href="#design-principles">PRINCIPLES</a><a href="#architecture-overview">ARCHITECTURE</a><a href="#the-filesystem">FILESYSTEM</a><a href="#capabilities-everything-the-os-can-do">CAPABILITIES</a><a href="#security-model">SECURITY</a><a href="#use-cases">USE CASES</a><a href="#how-ramondos-differs-from-windows-and-linux-and-why-it-matters">VS WINDOWS / LINUX</a><a href="#limits-stated-plainly">LIMITS</a><a href="#version-history-and-how-to-build-and-run">BUILD</a><a href="#logos">LOGOS</a>
+<a href="#download">DOWNLOAD</a><a href="#why-ramondos-was-built-and-how-the-build-went">WHY</a><a href="#design-principles">PRINCIPLES</a><a href="#architecture-overview">ARCHITECTURE</a><a href="#the-filesystem">FILESYSTEM</a><a href="#capabilities-everything-the-os-can-do">CAPABILITIES</a><a href="#security-model">SECURITY</a><a href="#use-cases">USE CASES</a><a href="#how-ramondos-differs-from-windows-and-linux-and-why-it-matters">VS WINDOWS / LINUX</a><a href="#limits-stated-plainly">LIMITS</a><a href="#version-history-and-how-to-build-and-run">BUILD</a><a href="#logos">LOGOS</a>
 </div></nav>
 <main>
 <div class="cards">
@@ -93,6 +93,17 @@ allows.
 
 <span>rg&gt;</span> readme</pre></div>
 </section>
+
+<h2 id="download">Download and run</h2>
+<p>The v1.3 bootable ISO (32-bit, BIOS boot, 6.1 MB) is attached to the GitHub release. Run it in a virtual machine.</p>
+<div class="dl"><a href="https://github.com/koaster12/ramondOS/releases/download/v1.3/ramondOS-v1.3-share.iso">Download ramondOS v1.3 ISO</a><a class="alt" href="https://www.virtualbox.org/wiki/Downloads">Get VirtualBox</a><a class="alt" href="https://github.com/koaster12/ramondOS/releases/tag/v1.3">Release page and checksum</a></div>
+<ol>
+<li>Install VirtualBox, then choose <strong>New</strong>. Set Type to <em>Other</em> and Version to <em>Other/Unknown (32-bit)</em>.</li>
+<li>Give it 512 MB of RAM. No hard disk is needed to try it.</li>
+<li>Under Settings, then Storage, attach the ISO as the optical drive. Leave EFI turned off.</li>
+<li>Start the VM. For saved data, add a second small virtual disk and run <code>disk init confirm</code> once.</li>
+</ol>
+<p>This public ISO contains no relay token, so networking and Ghidra stay off until you run your own relay. Check the download against the SHA-256 on the release page.</p>
 
 <h2 id="why-ramondos-was-built-and-how-the-build-went">Why ramondOS was built and how the build went</h2>
 <p>ramondOS is a from-scratch x86 operating system built so a reverse engineer or threat hunter can run hostile code and hostile files on a machine that denies everything by default and records everything it allows.</p>
