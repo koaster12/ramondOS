@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ramondOS - a native security OS for reverse engineering</title>
+<meta name="description" content="ramondOS is a from-scratch native x86 operating system for reverse engineering, vulnerability research and threat hunting: default-deny cells, learn mode and a tamper-evident audit log.">
+<meta property="og:title" content="ramondOS"><meta property="og:description" content="A from-scratch native OS for reverse engineering, vulnerability research and threat hunting.">
+<link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+<style>
+:root{--bg:#05050c;--panel:#0d0d18;--or:#ff9900;--pu:#cc99cc;--bl:#9999ff;--pe:#ffcc99;--sa:#ffaa90;--re:#ff5555;--tx:#e8e6f0;--dim:#9b98b0}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.65 "DejaVu Sans","Segoe UI",system-ui,sans-serif}
+a{color:var(--bl)}a:hover{color:var(--pe)}
+.mono{font-family:"DejaVu Sans Mono",Consolas,Menlo,monospace}
+.bar{display:flex;gap:8px;height:26px;padding:0}
+.bar i{display:block;border-radius:0 0 13px 13px;flex:1}
+.bar i:nth-child(1){background:var(--or);flex:0 0 120px;border-radius:0 0 40px 0}
+.bar i:nth-child(2){background:var(--pu)}.bar i:nth-child(3){background:var(--bl)}.bar i:nth-child(4){background:var(--pe);flex:2}
+header.hero{max-width:1080px;margin:0 auto;padding:56px 24px 28px;display:grid;grid-template-columns:200px 1fr;gap:36px;align-items:center}
+.hero img{width:200px;height:200px;border-radius:40px}
+h1.title{font-family:"DejaVu Sans Mono",Consolas,monospace;font-size:clamp(40px,7vw,76px);margin:0;color:var(--or);letter-spacing:-1px;line-height:1.05}
+.tag{color:var(--pe);font-size:20px;margin:10px 0 18px;max-width:640px}
+.pills{display:flex;flex-wrap:wrap;gap:10px}
+.pill{font:700 13px/1 "DejaVu Sans Mono",Consolas,monospace;padding:10px 18px;border-radius:999px;color:#05050c;letter-spacing:.5px}
+.pill.re{background:var(--re);animation:blink 1s steps(1) infinite}.pill.bl{background:var(--bl)}.pill.pu{background:var(--pu)}.pill.or{background:var(--or)}
+@keyframes blink{50%{background:#3a1010;color:var(--re)}}
+nav.top{position:sticky;top:0;z-index:5;background:rgba(5,5,12,.92);backdrop-filter:blur(6px);border-bottom:1px solid #22223a}
+nav.top div{max-width:1080px;margin:0 auto;padding:10px 24px;display:flex;flex-wrap:wrap;gap:8px}
+nav.top a{font:700 12px/1 "DejaVu Sans Mono",Consolas,monospace;text-decoration:none;color:#05050c;padding:9px 14px;border-radius:999px}
+nav.top a:nth-child(5n+1){background:var(--or)}nav.top a:nth-child(5n+2){background:var(--pu)}nav.top a:nth-child(5n+3){background:var(--bl)}nav.top a:nth-child(5n+4){background:var(--sa)}nav.top a:nth-child(5n+5){background:var(--pe)}
+nav.top a:hover{filter:brightness(1.15);color:#05050c}
+main{max-width:1080px;margin:0 auto;padding:12px 24px 80px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin:28px 0 8px}
+.card{background:var(--panel);border-left:10px solid var(--or);border-radius:6px 22px 22px 6px;padding:18px 20px}
+.card:nth-child(2){border-color:var(--pu)}.card:nth-child(3){border-color:var(--bl)}.card:nth-child(4){border-color:var(--sa)}
+.card h3{margin:0 0 6px;font:700 15px "DejaVu Sans Mono",Consolas,monospace;color:var(--pe)}.card p{margin:0;color:var(--dim);font-size:15px}
+section.shot{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:center;margin:34px 0}
+.con{border:2px solid var(--or);border-radius:18px;overflow:hidden;background:#000}.conbar{display:flex;justify-content:space-between;background:var(--or);color:#05050c;font:700 13px "DejaVu Sans Mono",Consolas,monospace;padding:6px 16px}.con pre{margin:0;padding:14px 18px;color:#fff;font:13px/1.45 "DejaVu Sans Mono",Consolas,monospace;white-space:pre-wrap}.con pre b{color:#fff}.con pre em{color:var(--or);font-style:normal;font-weight:700}.con pre span{color:var(--bl)}
+h2{font:700 26px/1.2 "DejaVu Sans Mono",Consolas,monospace;color:var(--or);margin:56px 0 14px;padding-bottom:10px;border-bottom:3px solid;border-image:linear-gradient(90deg,var(--or),var(--pu),var(--bl),transparent) 1}
+p{max-width:820px}li{margin:6px 0;max-width:820px}
+code{font-family:"DejaVu Sans Mono",Consolas,monospace;background:#16162a;padding:2px 6px;border-radius:5px;color:var(--pe);font-size:.9em}
+table{border-collapse:separate;border-spacing:0;width:100%;margin:18px 0;font-size:15px;background:var(--panel);border-radius:12px;overflow:hidden}
+th{background:#1b1b33;color:var(--pe);text-align:left;font:700 13px "DejaVu Sans Mono",Consolas,monospace;padding:11px 14px}
+td{padding:10px 14px;border-top:1px solid #1d1d33;vertical-align:top}
+tr:nth-child(even) td{background:#0a0a14}
+svg.arch{width:100%;height:auto;background:var(--panel);border-radius:14px;margin:18px 0;padding:6px}
+svg.arch .t{font:13px "DejaVu Sans Mono",Consolas,monospace;fill:#e8e6f0}svg.arch .b{font-weight:700}svg.arch .s{font-size:11.5px;fill:#9b98b0}svg.arch .h{font-size:15px;font-weight:700;fill:#ff9900}
+.note{background:var(--panel);border-left:10px solid var(--re);border-radius:6px 18px 18px 6px;padding:14px 18px;margin:26px 0;color:var(--pe)}
+.dl{display:flex;flex-wrap:wrap;gap:12px;margin:18px 0}
+.dl a{display:inline-block;padding:12px 22px;border-radius:999px;font:700 14px "DejaVu Sans Mono",Consolas,monospace;text-decoration:none;color:#05050c;background:var(--or)}
+.dl a.alt{background:var(--bl)}
+footer{border-top:1px solid #22223a;color:var(--dim);text-align:center;padding:30px 20px 50px;font-size:14px}
+@media(max-width:760px){header.hero{grid-template-columns:1fr;text-align:center;justify-items:center}section.shot{grid-template-columns:1fr}}
+</style></head><body>
+<div class="bar"><i></i><i></i><i></i><i></i></div>
+<header class="hero">
+  <img src="assets/logo.svg" alt="ramondOS logo">
+  <div>
+    <h1 class="title">ramondOS</h1>
+    <p class="tag">A from-scratch native OS for reverse engineering, vulnerability research and threat hunting. It denies everything by default and records everything it allows.</p>
+    <div class="pills"><span class="pill re">CELLS ARMED</span><span class="pill bl">DEFAULT-DENY</span><span class="pill pu">LEARN MODE</span><span class="pill or">TAMPER-EVIDENT AUDIT</span></div>
+  </div>
+</header>
+<nav class="top"><div>
+<a href="#why-ramondos-was-built-and-how-the-build-went">WHY</a><a href="#design-principles">PRINCIPLES</a><a href="#architecture-overview">ARCHITECTURE</a><a href="#the-filesystem">FILESYSTEM</a><a href="#capabilities-everything-the-os-can-do">CAPABILITIES</a><a href="#security-model">SECURITY</a><a href="#use-cases">USE CASES</a><a href="#how-ramondos-differs-from-windows-and-linux-and-why-it-matters">VS WINDOWS / LINUX</a><a href="#limits-stated-plainly">LIMITS</a><a href="#version-history-and-how-to-build-and-run">BUILD</a><a href="#logos">LOGOS</a>
+</div></nav>
+<main>
+<div class="cards">
+<div class="card"><h3>DEFAULT-DENY CELLS</h3><p>Programs run in ring 3 with only the capabilities they are granted.</p></div>
+<div class="card"><h3>LEARN MODE</h3><p>See what a program asks for. Sensitive requests are logged, never executed.</p></div>
+<div class="card"><h3>HASH-CHAINED AUDIT</h3><p>A SHA-256 chain makes edits to history detectable.</p></div>
+<div class="card"><h3>RELAY-ONLY NETWORK</h3><p>One narrow door to the host. API keys never live inside the OS.</p></div>
+</div>
+<section class="shot">
+<div><h2 style="margin-top:0">See it run</h2><p>The built-in README, as shown in the ramondOS console: LCARS styling, 1280x720 framebuffer, no desktop environment underneath.</p><div class="note">Run ramondOS in a virtual machine (QEMU or VirtualBox). It is a research system and has not been hardened for bare metal.</div></div>
+<div class="con"><div class="conbar"><span>COMMAND CONSOLE</span><span>SCROLLED +68</span></div><pre><b>ramondOS README</b>
+Version 1.3 - native security OS for reverse
+engineering, vulnerability research and threat
+hunting. Run it in a virtual machine.
+
+<em>WHY IT EXISTS</em>
+Analysis tools usually run on general-purpose
+systems that trust their own software. ramondOS
+is a small OS written for one job: run hostile
+code and files on a machine that denies
+everything by default and records everything it
+allows.
+
+<em>DESIGN RULES</em>
+ 1. Default deny. Each right is granted.
+ 2. Small enough to read. One kernel source tree.
+ 3. Everything leaves a record (SHA-256 chain).
+ 4. Analysis never trusts the sample.
+ 5. One narrow network door: a relay on the host.
+
+<span>rg&gt;</span> readme</pre></div>
+</section>
+
+<h2 id="why-ramondos-was-built-and-how-the-build-went">Why ramondOS was built and how the build went</h2>
+<p>ramondOS is a from-scratch x86 operating system built so a reverse engineer or threat hunter can run hostile code and hostile files on a machine that denies everything by default and records everything it allows.</p>
+<p>The starting problem: analysis tools run on general-purpose systems that trust their own software. Malware samples, vulnerable binaries and unknown executables get opened on an OS whose defaults favor convenience, whose audit trail can be edited by the same user doing the analysis, and whose size makes it hard to say what the system itself is doing. A small OS written for this one job can be read end to end, and every permission in it can be explained.</p>
+<p>The build went in stages, each one tested before the next began:</p>
+<ol>
+<li><strong>Early versions (through v0.4):</strong> a bootable kernel (GRUB multiboot), a 1280x720 framebuffer GUI in an LCARS style, ring 3 user-mode "cells", and learn mode.</li>
+<li><strong>Networking and analysis (v0.5 to v0.7):</strong> a relay-only network path, threat intel pulls, a built-in x86 disassembler, a Windows PE emulator called windows_exe, and Ghidra headless analysis driven through the relay.</li>
+<li><strong>Persistence (v0.8):</strong> an ATA disk driver and a saved filesystem, so cases and evidence survive a reboot.</li>
+<li><strong>Tamper-evident audit (v0.9):</strong> a SHA-256 hash chain over every security-relevant event.</li>
+<li><strong>POSIX layer and multitasking (v1.0):</strong> a Unix-style filesystem, an ELF loader, a small C library, then a preemptive scheduler with fork, exec, pipes, signals and a shell.</li>
+<li><strong>Polish (v1.1 to v1.3):</strong> the LCARS side panel image, layout fixes, an in-OS README and a blinking CELLS ARMED indicator.</li>
+<li><strong>64-bit port (in progress):</strong> a 64-bit kernel that keeps today's 32-bit programs running unchanged.</li>
+</ol>
+<p>Testing used two emulators, QEMU and VirtualBox. v1.0 passed 19 of 19 fork tests and 106 of 106 POSIX tests, plus fault, runaway-process and fork-bomb checks.</p>
+<h2 id="design-principles">Design principles</h2>
+<p>Five rules shaped every decision, and a feature that broke one was changed or left out.</p>
+<ul>
+<li><strong>Default deny.</strong> A program starts with no rights. Each right is a capability bit that must be granted: file read, file write, network, exec, credentials, kernel memory.</li>
+<li><strong>Small enough to read.</strong> One kernel translation unit, no inherited drivers, no hidden services. What the OS does is what the source says.</li>
+<li><strong>Everything leaves a record.</strong> Allowed and denied actions go into an audit log where each entry is chained to the previous one by SHA-256, so editing history breaks the chain.</li>
+<li><strong>Analysis never trusts the sample.</strong> Untrusted code runs in ring 3 cells or inside an emulator. Emulated behavior is reported, never assumed safe.</li>
+<li><strong>The network is a single narrow door.</strong> The kernel talks only to a relay on the host. The relay holds API keys, checks a token and applies an allowlist, so no key ever lives inside the OS.</li>
+</ul>
+<p>A sixth, practical rule: keep Unix conventions where they cost nothing. Programs use familiar calls (open, read, fork, pipe), so ordinary C tools compile for it.</p>
+<h2 id="architecture-overview">Architecture overview</h2>
+<p>ramondOS boots through GRUB into a kernel that runs the GUI, the scheduler and all drivers in ring 0, while every program runs in ring 3 and enters the kernel only by system call.</p>
+<svg class="arch" viewBox="0 0 760 470" role="img" aria-label="Untrusted programs reach the world only through the kernel and one relay"><defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#9999ff"/></marker></defs><text x="24" y="30" class="t h">Untrusted programs reach the world only through the kernel and one relay</text><rect x="24" y="54" width="712" height="108" rx="12" fill="none" stroke="#9aa" stroke-width="1.5"/><text x="40" y="76" class="t b">Ring 3: cells (untrusted, no rights until granted)</text><rect x="40" y="90" width="160" height="56" rx="10" fill="none" stroke="#9aa" stroke-width="1.5"/><text x="120.0" y="115.0" text-anchor="middle" class="t b">sh and tools</text><text x="120.0" y="132.0" text-anchor="middle" class="t s">ELF programs</text><rect x="220" y="90" width="160" height="56" rx="10" fill="none" stroke="#9aa" stroke-width="1.5"/><text x="300.0" y="115.0" text-anchor="middle" class="t b">Samples</text><text x="300.0" y="132.0" text-anchor="middle" class="t s">suspect programs</text><rect x="400" y="90" width="160" height="56" rx="10" fill="none" stroke="#9aa" stroke-width="1.5"/><text x="480.0" y="115.0" text-anchor="middle" class="t b">windows_exe</text><text x="480.0" y="132.0" text-anchor="middle" class="t s">32-bit PE emulator</text><rect x="580" y="90" width="140" height="56" rx="10" fill="none" stroke="#9aa" stroke-width="1.5"/><text x="650.0" y="115.0" text-anchor="middle" class="t b">C library</text><text x="650.0" y="132.0" text-anchor="middle" class="t s">syscalls, int 0x80</text><path d="M380 162V196" stroke="#9999ff" stroke-width="1.5" fill="none" marker-end="url(#ar)"/><text x="394" y="184" class="t s">every request checked against capabilities</text><rect x="24" y="198" width="712" height="150" rx="12" fill="#ff9900" fill-opacity="0.12" stroke="#ff9900" stroke-width="2.5"/><text x="40" y="220" class="t b">Ring 0: the kernel (one source tree)</text><rect x="40" y="234" width="162" height="46" rx="10" fill="none" stroke="#9aa" stroke-width="1.5"/><text x="121.0" y="262.0" text-anchor="middle" class="t">Scheduler, signals</text><rect x="40" y="292" width="162" height="46" rx="10" fill="none" stroke="#9aa" stroke-width="1.5"/><text x="121.0" y="320.0" text-anchor="middle" class="t">Memory and pipes</text><rect x="214" y="234" width="162" height="46" rx="10" fill="none" stroke="#9aa" stroke-width="1.5"/><text x="295.0" y="262.0" text-anchor="middle" class="t">Capability gate</text><rect x="214" y="292" width="162" height="46" rx="10" fill="none" stroke="#9aa" stroke-width="1.5"/><text x="295.0" y="320.0" text-anchor="middle" class="t">LCARS GUI</text><rect x="388" y="234" width="162" height="46" rx="10" fill="none" stroke="#9aa" stroke-width="1.5"/><text x="469.0" y="262.0" text-anchor="middle" class="t">RAM filesystem</text><rect x="388" y="292" width="162" height="46" rx="10" fill="none" stroke="#9aa" stroke-width="1.5"/><text x="469.0" y="320.0" text-anchor="middle" class="t">ATA disk driver</text><rect x="562" y="234" width="158" height="46" rx="10" fill="none" stroke="#9aa" stroke-width="1.5"/><text x="641.0" y="262.0" text-anchor="middle" class="t">Hash-chained audit</text><rect x="562" y="292" width="158" height="46" rx="10" fill="none" stroke="#9aa" stroke-width="1.5"/><text x="641.0" y="320.0" text-anchor="middle" class="t">Relay-only network</text><path d="M469 338V386" stroke="#9999ff" stroke-width="1.5" fill="none" marker-end="url(#ar)"/><path d="M641 338V386" stroke="#9999ff" stroke-width="1.5" fill="none" marker-end="url(#ar)"/><rect x="388" y="388" width="162" height="46" rx="10" fill="none" stroke="#9aa" stroke-width="1.5"/><text x="469.0" y="416.0" text-anchor="middle" class="t">Data disk</text><rect x="562" y="388" width="158" height="46" rx="10" fill="none" stroke="#9aa" stroke-width="1.5"/><text x="641.0" y="408.0" text-anchor="middle" class="t b">Host relay</text><text x="641.0" y="425.0" text-anchor="middle" class="t s">token, allowlist, keys</text><text x="24" y="408" class="t s">The relay runs on the host</text><text x="24" y="425" class="t s">and calls Ghidra and threat intel.</text></svg>
+
+<p>Programs in ring 3 can only call the kernel, the kernel enforces capabilities on every call, and the only way out of the machine is the relay on the host.</p>
+<h2 id="the-filesystem">The filesystem</h2>
+<p>The filesystem lives in RAM as a Unix-style tree of 160 nodes and is saved to disk on request or by autosave. Files are stored in 1 KB blocks from a pool of 2,048 blocks, and one file can hold at most 128 KB.</p>
+<p>It follows Unix rules: every node has an owner, a group and permission bits, and programs running in cells run as user and group 1000. The layout mixes standard Unix directories with four directories made for investigations.</p>
+<table>
+<thead>
+<tr>
+<th>Directory</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>/bin</td>
+<td>Built-in programs: sh, ls, cat, grep, ps, forktest, windows_exe and more</td>
+</tr>
+<tr>
+<td>/etc</td>
+<td>System configuration</td>
+</tr>
+<tr>
+<td>/home/user</td>
+<td>Working area for the analyst</td>
+</tr>
+<tr>
+<td>/tmp</td>
+<td>Scratch space</td>
+</tr>
+<tr>
+<td>/cases</td>
+<td>One folder per investigation: notes, reports, findings</td>
+</tr>
+<tr>
+<td>/evidence</td>
+<td>Material collected for a case</td>
+</tr>
+<tr>
+<td>/samples</td>
+<td>Suspect files awaiting analysis</td>
+</tr>
+<tr>
+<td>/tools</td>
+<td>Analysis helpers and utilities</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Persistence.</strong> The disk is an ATA drive read and written in PIO mode, formatted with a signature called RMDFS001. Writing a fresh format requires the explicit command <code>disk init confirm</code>, so a stray command cannot wipe a disk. After that, the system saves automatically and writes only the sectors that changed.</p>
+<p><strong>Process view of files.</strong> Each process has its own table of 16 file descriptors pointing into a shared table of 32 open files. Pipes (8, each 4 KB) and the console use the same descriptors, which is what lets shell pipelines work.</p>
+<h2 id="capabilities-everything-the-os-can-do">Capabilities: everything the OS can do</h2>
+<p>ramondOS covers six areas: isolation, analysis, networking, files, processes and audit.</p>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cells</td>
+<td>Runs a program in ring 3 with only the capabilities granted to it; anything else is denied and logged</td>
+</tr>
+<tr>
+<td>Learn mode</td>
+<td>Shows what a program tries to do and asks for approval; sensitive capabilities (network, exec, credentials, kernel memory) are recorded but never actually executed</td>
+</tr>
+<tr>
+<td>windows_exe</td>
+<td>Emulates a 32-bit Windows PE file with an x86 interpreter and about 200 fake Windows API handlers, then reports behavior categories, indicators of compromise and a heuristic score; limited to 30 million instructions and 15 seconds of CPU</td>
+</tr>
+<tr>
+<td>Disassembler</td>
+<td>Built-in x86 disassembly for inspecting code</td>
+</tr>
+<tr>
+<td>Ghidra via relay</td>
+<td><code>ghidra analyze</code>, <code>status</code>, <code>summary</code>, <code>funcs</code>, <code>decomp</code>, <code>imports</code> and <code>strings</code> run Ghidra 12.1.4 headless on the host and return results to the OS</td>
+</tr>
+<tr>
+<td>Threat intel</td>
+<td><code>intel</code> and <code>pull</code> fetch indicator data through the relay</td>
+</tr>
+<tr>
+<td>Networking</td>
+<td><code>net on</code>, <code>off</code>, <code>ping</code>, <code>test</code>; the only destination is the relay</td>
+</tr>
+<tr>
+<td>Multitasking</td>
+<td>Preemptive round-robin scheduler, up to 16 tasks, 5-tick slices at 100 Hz</td>
+</tr>
+<tr>
+<td>Process control</td>
+<td>fork, execve, waitpid, pipes, signals, process groups, Ctrl-C and Ctrl-D; kernel commands <code>ps</code>, <code>mem</code>, <code>kill</code></td>
+</tr>
+<tr>
+<td>Shell</td>
+<td>/bin/sh with pipelines, redirection (<code>&lt;</code>, <code>&gt;</code>, <code>&gt;&gt;</code>), background jobs (<code>&amp;</code>), quoting and builtins (cd, pwd, ps, kill, help, exit)</td>
+</tr>
+<tr>
+<td>Programs</td>
+<td>A freestanding C library lets ELF programs run from /bin: cat, echo, ls, cp, mv, rm, mkdir, grep, wc, head, touch, stat, chmod, id, date, uname and others</td>
+</tr>
+<tr>
+<td>Audit</td>
+<td>SHA-256 hash-chained log of 256 entries with <code>audit verify</code>, <code>head</code>, <code>show N</code> and <code>selftest</code></td>
+</tr>
+<tr>
+<td>Persistence</td>
+<td>Saved filesystem with autosave on a data disk</td>
+</tr>
+<tr>
+<td>GUI</td>
+<td>LCARS-style 1280x720 interface with a built-in README (<code>readme</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>A watchdog protects the whole system: every task has a CPU tick budget (200 ticks by default, 1,500 for windows_exe, none for the shell), and a task that exceeds it is killed.</p>
+<h2 id="security-model">Security model</h2>
+<p>Every program is untrusted until granted rights, and the kernel checks each request against six capability bits.</p>
+<table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>Value</th>
+<th>Allows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FS_READ</td>
+<td>1</td>
+<td>Reading files</td>
+</tr>
+<tr>
+<td>FS_WRITE</td>
+<td>2</td>
+<td>Writing files</td>
+</tr>
+<tr>
+<td>NET</td>
+<td>4</td>
+<td>Network access through the relay</td>
+</tr>
+<tr>
+<td>EXEC</td>
+<td>8</td>
+<td>Starting other programs (fork, execve)</td>
+</tr>
+<tr>
+<td>CREDS</td>
+<td>16</td>
+<td>Credential access</td>
+</tr>
+<tr>
+<td>KMEM</td>
+<td>32</td>
+<td>Kernel memory access</td>
+</tr>
+</tbody>
+</table>
+<p>NET, EXEC, CREDS and KMEM are the sensitive set. In learn mode they are logged as attempts and never executed.</p>
+<p>How the rules apply in practice:</p>
+<ul>
+<li><strong>Grants are narrow.</strong> Only the shell and a few test programs in /bin receive EXEC. A program placed anywhere else gets none, so it cannot spawn children.</li>
+<li><strong>Resources are bounded.</strong> A fork bomb or a spinning loop hits the task limit or the CPU watchdog, is killed, and leaks no memory.</li>
+<li><strong>The audit log resists tampering.</strong> Each entry's SHA-256 hash covers the one before it. <code>audit verify</code> recomputes the chain, and a changed or deleted entry makes it fail.</li>
+<li><strong>Secrets stay outside.</strong> API keys live on the host relay, which listens only on 127.0.0.1, requires a token and enforces an allowlist.</li>
+</ul>
+<p>One caution applies to the emulator: "NONE OBSERVED" in a windows_exe report means nothing suspicious was seen in that run. It does not prove the file is safe. Run ramondOS inside a virtual machine, as designed.</p>
+<h2 id="use-cases">Use cases</h2>
+<p>ramondOS fits work where the analyst needs to know exactly what a piece of code did and to prove the record was not altered.</p>
+<ol>
+<li><strong>Triage an unknown Windows executable.</strong> Copy the file to /samples and run it with windows_exe. The report lists behavior categories, indicators of compromise and a heuristic score, with nothing touching a real Windows system.</li>
+<li><strong>Deep static analysis with Ghidra.</strong> From inside the OS, <code>ghidra analyze</code> sends the sample through the relay to Ghidra on the host, then <code>funcs</code>, <code>decomp</code>, <code>imports</code> and <code>strings</code> bring the results back. This was run on a real binary, whoami.exe.</li>
+<li><strong>Watch what a program wants.</strong> Run an unfamiliar program in a cell in learn mode and read which capabilities it asks for. A tool that requests network and credentials when it should only read a file is a finding.</li>
+<li><strong>Keep a defensible case record.</strong> Notes and findings go in /cases, material in /evidence, and the hash-chained audit log shows what was done and when. <code>audit verify</code> supports the integrity of the record.</li>
+<li><strong>Pull threat intelligence safely.</strong> <code>intel</code> and <code>pull</code> fetch indicator data through the relay, so no API key is ever stored in the analysis environment.</li>
+<li><strong>Teach and test.</strong> The small readable source and the Unix-style layer make it a clear platform for teaching how processes, permissions and audit work, and for testing detection ideas.</li>
+</ol>
+<p>The larger goal is a sandbox where reverse-engineering tools and an AI assistant work together: ramondOS contains and records the analysis, and the assistant directs it through the relay. That orchestration is a design so far, not a finished feature.</p>
+<h2 id="how-ramondos-differs-from-windows-and-linux-and-why-it-matters">How ramondOS differs from Windows and Linux, and why it matters</h2>
+<p>Windows and Linux are built to run anything the user wants, and security is added around that. ramondOS is built the other way: it runs nothing until told to, and it assumes the thing being run is hostile.</p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Windows and Linux</th>
+<th>ramondOS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Starting posture</td>
+<td>Programs run with the user's rights; restrictions are opt-in</td>
+<td>Programs get no rights; each is granted explicitly</td>
+</tr>
+<tr>
+<td>Size and readability</td>
+<td>Millions of lines; no one person can read it all</td>
+<td>One kernel source tree a single person can read</td>
+</tr>
+<tr>
+<td>Audit trail</td>
+<td>Logs exist but a privileged user can edit or delete them</td>
+<td>Hash-chained log; edits break the chain</td>
+</tr>
+<tr>
+<td>Network</td>
+<td>Direct access to any host</td>
+<td>One door: a relay with token and allowlist</td>
+</tr>
+<tr>
+<td>Secrets</td>
+<td>API keys sit on the same machine as the work</td>
+<td>Keys stay on the host relay</td>
+</tr>
+<tr>
+<td>Running malware</td>
+<td>Real system at risk; needs a separate sandbox product</td>
+<td>Emulated or caged by design</td>
+</tr>
+<tr>
+<td>Hardware and software support</td>
+<td>Huge</td>
+<td>Deliberately tiny</td>
+</tr>
+</tbody>
+</table>
+<p>Why this matters:</p>
+<ul>
+<li><strong>Fewer places to hide.</strong> Malware often relies on the complexity of a general OS: services, drivers, hooks. A small system has few of those to abuse, and each is visible.</li>
+<li><strong>The tool cannot be quietly subverted.</strong> When the analysis environment itself keeps tamper-evident records, a result can be defended, which counts in forensics.</li>
+<li><strong>Containment is the default, not an add-on.</strong> Sandboxes layered on a general OS are only as strong as that OS. Here the isolation is the OS.</li>
+<li><strong>It is explainable.</strong> Every denied action has a named capability behind it, so the analyst can say why something was allowed or blocked.</li>
+</ul>
+<p>It does not replace Windows or Linux. It is a specialized instrument, used alongside them in a virtual machine, and its value comes from being small, strict and inspectable.</p>
+<h2 id="limits-stated-plainly">Limits, stated plainly</h2>
+<p>ramondOS is a working research system, not a finished product, and these limits are real.</p>
+<ul>
+<li><strong>Run it in a VM.</strong> It is tested on QEMU and VirtualBox only. It has not been hardened for bare metal.</li>
+<li><strong>32-bit samples only.</strong> windows_exe cannot emulate 64-bit PE files; a 64-bit binary is refused.</li>
+<li><strong>The emulator is partial.</strong> It interprets integer x86 code and fakes about 200 Windows APIs. Real malware can use features it does not model.</li>
+<li><strong>Absence of evidence is not safety.</strong> "NONE OBSERVED" describes one run only.</li>
+<li><strong>Ghidra runs on the host, not in a cell.</strong> The OS sends work through the relay and receives results; no AI assistant runs inside ramondOS.</li>
+<li><strong>Small filesystem.</strong> 160 nodes, 2,048 KB of block space and a 128 KB file limit.</li>
+<li><strong>Limited hardware.</strong> One CPU, ATA PIO disk access, a framebuffer GUI, and no USB or modern network drivers.</li>
+<li><strong>No formal verification.</strong> The kernel is tested, not proven correct.</li>
+<li><strong>64-bit is unfinished.</strong> The 64-bit kernel is a work in progress. A 64-bit userland, C library and ELF64 loader are not started.</li>
+</ul>
+<h2 id="version-history-and-how-to-build-and-run">Version history and how to build and run</h2>
+<p>The current release is v1.3 (32-bit); a 64-bit v2.0 is in progress.</p>
+<table>
+<thead>
+<tr>
+<th>Version</th>
+<th>What it added</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>v1.3</td>
+<td>In-OS README (button and <code>readme</code> command), blinking CELLS ARMED indicator</td>
+</tr>
+<tr>
+<td>v1.2</td>
+<td>Panel layout evened out</td>
+</tr>
+<tr>
+<td>v1.1</td>
+<td>LCARS side panel image</td>
+</tr>
+<tr>
+<td>v1.0</td>
+<td>Preemptive multitasking, fork/exec, pipes, signals, shell, POSIX-style filesystem and ELF programs</td>
+</tr>
+<tr>
+<td>v0.9</td>
+<td>SHA-256 hash-chained audit log</td>
+</tr>
+<tr>
+<td>v0.8</td>
+<td>Disk persistence with autosave</td>
+</tr>
+<tr>
+<td>v0.4 and earlier</td>
+<td>Boot, LCARS GUI, ring 3 cells, learn mode</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Build.</strong> The source is a single kernel translation unit (kernel.c) with headers for fonts, networking, the disassembler, the reverse-engineering tools, the POSIX layer, the scheduler and persistence. The <code>build.sh</code> script compiles the kernel, builds the user programs (sh, forktest, ps, sleep, spin, grep, cat, echo, wc, head, ls and others, plus windows_exe), and produces a bootable ISO.</p>
+<p><strong>Run.</strong> Boot the ISO in QEMU or VirtualBox. For saved data, attach a second disk and run <code>disk init confirm</code> once. To use networking and Ghidra, start the relay on the host (bound to 127.0.0.1, with its token and allowlist), then use <code>net on</code>.</p>
+<p><strong>Test.</strong> Inside the OS, run <code>forktest</code> and <code>posixtest</code>. A QEMU driver script scripts keyboard input and takes screenshots for regression checks.</p>
+<h2 id="logos">Logos</h2>
+<p>Free to use with the project. SVG files scale to any size.</p>
+<div class="cards">
+<div class="card" style="text-align:center"><img src="assets/logo.svg" alt="ramondOS icon" width="160" height="160"><h3 style="margin-top:10px">ICON (SVG)</h3><p><a href="assets/logo.svg">logo.svg</a></p></div>
+<div class="card" style="grid-column:span 2;text-align:center"><img src="assets/logo-wordmark.svg" alt="ramondOS wordmark" style="width:100%;max-width:560px;border-radius:10px"><h3 style="margin-top:10px">WORDMARK (SVG)</h3><p><a href="assets/logo-wordmark.svg">logo-wordmark.svg</a></p></div>
+</div>
+<h2>Documentation files</h2>
+<div class="dl"><a href="docs/DOCUMENTATION.md">Full documentation (Markdown)</a><a class="alt" href="docs/ramondOS-Readme.txt">In-OS README (text)</a></div>
+</main>
+<footer class="mono">ramondOS - a research operating system. LCARS-style interface is an original design. Not affiliated with any other project.</footer>
+</body></html>
